@@ -52,6 +52,13 @@ Personal training web app for Derek's Ironman Ottawa build. Status legend: **DEC
   - Each: headline number, change vs 8 weeks ago, trend line, personal bests.
 - Placement: structured workouts ship with the plan generator (MVP); Progress charts ship in MVP-lite (pace/power at HR from existing data), with PRs and test prompts in v1.
 
+## Athlete benchmarks (from Strava, 2026-11-05)
+- FTP 315 W (set manually Aug 15, 2026). Retest at the Saturday threshold ride.
+- Swim test Oct 30 (25 m multiples): 200 m at 1:47 /100 m, about 400 m at 1:50 /100 m. Critical swim speed from the two is about 1:53 /100 m, low confidence because the paces are so close; redo the 200 m all-out. Easy swims run about 2:05 /100 m.
+- Run: Strava's pace zones come from a 1:57:26 half marathon (Jun 2025) and are much faster than current fitness. The Nov 5 threshold run (3 x 10 min) held about 160 bpm, 5:42 then 6:08 and 6:09 /km. Strava HR Z4 starts at 168, so this effort sat in Z3: that is the threshold-drift insight. Pace targets come from recent efforts, not Strava's race-based pace zones.
+- Laps: Strava activity laps (from the watch) give rep splits for intervals and swim sets, so test results and workout compliance can be read automatically, with a one-tap "tag as test" confirm.
+- Strava's own race-time predictions are not in the API; the engine computes its own ranges from recent efforts and labels them estimates.
+
 ## Data model
 `athlete`, `strava_auth` (encrypted tokens), `strava_zones` (history), `activities` (raw_json), `activity_zone_seconds`, `activity_load`, `daily_metrics`, `constraints`, `plans`, `plan_weeks`, `planned_sessions` (structure jsonb, status, matched_activity_id, gcal_event_id, source generated|manual), `plan_proposals`, `plan_changes`, `weekly_checkins`, `checkin_answers`, `calendar_link`, `sync_events`, plus a versioned `settings` table.
 
