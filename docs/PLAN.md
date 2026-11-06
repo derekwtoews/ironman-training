@@ -45,11 +45,11 @@ Personal training web app for Derek's Ironman Ottawa build. Status legend: **DEC
   - Run: HR range (bpm) and pace range from Strava zones. Bike: watts range from FTP plus HR range. Swim: sets, distances, rest and effort by feel/pace (no HR in the pool).
   - Targets are computed in the engine from Strava zones and FTP; never typed by an LLM. Stored as `planned_sessions.structure` (jsonb, zod-validated).
   - Needs from Derek as settings: FTP (Strava has 315 W), a threshold run pace (Strava run zones are race-pace based), and a swim threshold pace (CSS) or a recent 400 m time.
-- **Progress page** (per discipline, over time), derived from synced activities, never from live Strava calls:
-  - Bike: power at Z2 heart rate, best 20-minute power vs FTP, long-ride duration.
-  - Run: pace at Z2 heart rate, best efforts, longest run.
-  - Swim: pace per 100 m on easy swims (no HR), best 400 m / 1500 m, longest swim.
-  - Each: headline number, change vs 8 weeks ago, trend line, personal bests.
+- **Progress section: three sub-pages (Swim, Bike, Run)**, each data-dense, derived from synced activities (never live Strava calls). Every chart offers 12 weeks / 6 months / since Jan 2025, dots per session plus a 4-week rolling line, and % change vs 8 weeks ago.
+  - Swim: avg pace per 100 m (all / easy / main sets), SWOLF for a 25 m pool (time + strokes per length; strokes from Strava stroke rate x length time, estimated until validated against the watch), strokes per length, distance per stroke, weekly meters vs plan, test results and CSS history, main-set pace fade, longest swim, recent swims table.
+  - Bike: avg power (all / endurance / threshold / long rides) with % change, W/kg = FTP / body weight (weekly weigh-ins stored here, since Strava keeps only current weight), weekly hours or km vs plan, elevation per week, power at Z2 HR, best 5/20/60-min power vs 6 months ago, FTP history, recent rides table.
+  - Run: weekly km vs plan, avg pace by run type (easy / long / threshold, type from the matched planned session), threshold rep breakdown and fade from watch laps, pace at Z2 HR, long-run build vs plan, best efforts vs all-time PBs with computed estimates, recent runs table.
+  - New data needed: `body_weight` (athlete_id, date, grams), per-lap rows (`activity_laps`, from Strava laps, raw kept), and a `run_type` / `session_type` on matched sessions.
 - Placement: structured workouts ship with the plan generator (MVP); Progress charts ship in MVP-lite (pace/power at HR from existing data), with PRs and test prompts in v1.
 
 ## Athlete benchmarks (from Strava, 2026-11-05)
