@@ -162,3 +162,59 @@ export function Legend({
     </div>
   );
 }
+
+const ZONE_COLORS = ["#cfe1fb", "#7db2f7", "#2f7de8", "#0a4aa8", "#072f6b"];
+
+/** Horizontal bar of time in zones 1–5. Estimated (no-HR) zones are striped. */
+export function ZoneBar({
+  zones,
+  estimated = false,
+  className = "",
+}: {
+  zones: readonly number[] | null;
+  estimated?: boolean;
+  className?: string;
+}) {
+  const total = zones?.reduce((s, x) => s + x, 0) ?? 0;
+  if (!zones || total === 0)
+    return (
+      <div
+        className={`h-2.5 rounded-full bg-[#eceef2] ${className}`}
+        role="img"
+        aria-label="No zone data"
+      />
+    );
+  const label = zones
+    .map((s, i) =>
+      s > 0 ? `zone ${i + 1} ${Math.round((s / total) * 100)}%` : null,
+    )
+    .filter(Boolean)
+    .join(", ");
+  return (
+    <div
+      className={`flex h-2.5 overflow-hidden rounded-full ${className}`}
+      role="img"
+      aria-label={`${estimated ? "Estimated: " : ""}${label}`}
+    >
+      {zones.map((s, i) =>
+        s > 0 ? (
+          <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: zones are a fixed 5-slot array
+            key={i}
+            style={{
+              flexGrow: s,
+              background: estimated
+                ? `repeating-linear-gradient(45deg, ${ZONE_COLORS[i]}, ${ZONE_COLORS[i]} 4px, #e8f1fe 4px, #e8f1fe 8px)`
+                : ZONE_COLORS[i],
+            }}
+          />
+        ) : null,
+      )}
+    </div>
+  );
+}
+
+export const ZONE_LEGEND = ZONE_COLORS.map((color, i) => ({
+  color,
+  label: `Z${i + 1}`,
+}));

@@ -39,8 +39,13 @@ function active(path: string, item: { href: string; match?: string }) {
   return m === "/" ? path === "/" : path === m || path.startsWith(`${m}/`);
 }
 
+/** Reads the URL; render inside <Suspense> with <SidebarView path="" /> as the fallback. */
 export function Sidebar() {
-  const path = usePathname();
+  return <SidebarView path={usePathname()} />;
+}
+
+/** Pure view so the layout can render it without the URL (prerendered shell). */
+export function SidebarView({ path }: { path: string }) {
   return (
     <>
       <nav

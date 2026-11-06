@@ -65,3 +65,33 @@ export const SPORT: Record<Discipline, { label: string; chip: string }> = {
   row: { label: "Row", chip: "bg-[#fde8e4] text-[#9a2f1c]" },
   other: { label: "Other", chip: "bg-[#eceef2] text-[#4b5260]" },
 };
+
+/** 342 -> "5:42" */
+export const pace = (secPerUnit: number | null): string =>
+  secPerUnit == null
+    ? "—"
+    : `${Math.floor(secPerUnit / 60)}:${String(Math.round(secPerUnit % 60)).padStart(2, "0")}`;
+
+/** Local start time, e.g. "7:49 am". */
+export function timeOfDay(d: Date, timezone: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    hour: "numeric",
+    minute: "2-digit",
+  })
+    .format(d)
+    .replace(".", "")
+    .replace(".", "");
+}
+
+/** "Pool" for pool swims, "Indoor" for trainer rides/treadmill/erg; nothing for weights etc. */
+export function placeLabel(
+  discipline: Discipline,
+  isTrainer: boolean,
+): string | null {
+  if (!isTrainer) return null;
+  if (discipline === "swim") return "Pool";
+  return discipline === "bike" || discipline === "run" || discipline === "row"
+    ? "Indoor"
+    : null;
+}
