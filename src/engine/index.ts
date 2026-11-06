@@ -1,6 +1,7 @@
 export * from "./dates";
 export * from "./fitness";
 export * from "./guardrails";
+export * from "./insights";
 export * from "./laps";
 export * from "./load";
 export * from "./types";
