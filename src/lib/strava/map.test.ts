@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { loadFromZoneSeconds } from "@/engine";
 import {
+  deriveLoadZones,
   deriveZoneSeconds,
   disciplineFor,
   mapActivity,
@@ -89,6 +91,50 @@ describe("strava mapping", () => {
     ).toEqual([1800, 2400, 600, 0, 0]);
     expect(
       deriveZoneSeconds(
+        { discipline: "run", movingSeconds: 600, avgHr: null },
+        null,
+        HR,
+      ),
+    ).toBeNull();
+  });
+  it("estimates no-HR swims from intended effort", () => {
+    const swim = {
+      discipline: "swim" as const,
+      movingSeconds: 2580,
+      avgHr: null,
+    };
+    const easy = deriveLoadZones(swim, null, HR);
+    expect(easy).toEqual({ zoneSeconds: [0, 2580, 0, 0, 0], estimated: true });
+    expect(deriveLoadZones(swim, null, HR, "threshold")?.zoneSeconds).toEqual([
+      0, 0, 2580, 0, 0,
+    ]);
+    // 43 min easy = 43 * 2 = 86; threshold = 43 * 3 = 129
+    expect(loadFromZoneSeconds(easy?.zoneSeconds as never)).toBe(86);
+    expect(
+      loadFromZoneSeconds(
+        deriveLoadZones(swim, null, HR, "threshold")?.zoneSeconds as never,
+      ),
+    ).toBe(129);
+  });
+  it("prefers real HR zones for a swim when present, and never estimates other sports", () => {
+    const withHr = deriveLoadZones(
+      { discipline: "swim", movingSeconds: 2580, avgHr: 128 },
+      [dist([1800, 600, 180, 0, 0])],
+      HR,
+    );
+    expect(withHr).toEqual({
+      zoneSeconds: [1800, 600, 180, 0, 0],
+      estimated: false,
+    });
+    expect(
+      deriveLoadZones(
+        { discipline: "other", movingSeconds: 4263, avgHr: null },
+        null,
+        HR,
+      ),
+    ).toBeNull();
+    expect(
+      deriveLoadZones(
         { discipline: "run", movingSeconds: 600, avgHr: null },
         null,
         HR,

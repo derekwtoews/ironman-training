@@ -1,0 +1,1 @@
+ALTER TABLE "activity_load" ADD COLUMN "estimated" boolean DEFAULT false NOT NULL;

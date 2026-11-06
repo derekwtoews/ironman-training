@@ -10,7 +10,7 @@ import {
 import { LOAD_FORMULA_VERSION, type Zone } from "@/engine";
 import { RateLimitError, type StravaClient, StravaHttpError } from "./client";
 import {
-  deriveZoneSeconds,
+  deriveLoadZones,
   loadFor,
   mapActivity,
   type StravaActivity,
@@ -140,7 +140,8 @@ export async function ingestActivity(
       : await optional(
           client.get<StravaZonesResponse[]>(`/activities/${stravaId}/zones`),
         );
-  const z = deriveZoneSeconds(m, zonesRaw, hrZones);
+  const derived = deriveLoadZones(m, zonesRaw, hrZones);
+  const z = derived?.zoneSeconds;
 
   await db
     .delete(activityZoneSeconds)
@@ -172,6 +173,7 @@ export async function ingestActivity(
       athleteId,
       activityId: row.id,
       load: loadFor(z),
+      estimated: derived?.estimated ?? false,
       formulaVersion: LOAD_FORMULA_VERSION,
     });
   }

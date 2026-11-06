@@ -1,5 +1,10 @@
 import type { Discipline, Zone, ZoneSeconds } from "@/engine";
-import { loadFromZoneSeconds, strengthZoneSeconds } from "@/engine";
+import {
+  type EffortLevel,
+  estimateSwimZoneSeconds,
+  loadFromZoneSeconds,
+  strengthZoneSeconds,
+} from "@/engine";
 
 // Pure mapping from Strava payloads to our rows. No network, no db.
 
@@ -108,3 +113,23 @@ export function deriveZoneSeconds(
 }
 
 export const loadFor = (z: ZoneSeconds): number => loadFromZoneSeconds(z);
+
+/**
+ * Like deriveZoneSeconds, but swims with no heart rate get an estimate from their intended
+ * effort (easy = Z2, threshold = Z3; default easy). `estimated` is stored so the UI can say so.
+ */
+export function deriveLoadZones(
+  a: { discipline: Discipline; movingSeconds: number; avgHr: number | null },
+  stravaZones: StravaZonesResponse[] | null,
+  hrZones: readonly Zone[],
+  effort?: EffortLevel,
+): { zoneSeconds: ZoneSeconds; estimated: boolean } | null {
+  const z = deriveZoneSeconds(a, stravaZones, hrZones);
+  if (z) return { zoneSeconds: z, estimated: false };
+  if (a.discipline === "swim")
+    return {
+      zoneSeconds: estimateSwimZoneSeconds(a.movingSeconds, effort),
+      estimated: true,
+    };
+  return null;
+}

@@ -8,6 +8,13 @@
       "when": 1793925387281,
       "tag": "0000_loving_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793929086380,
+      "tag": "0001_bumpy_magdalene",
+      "breakpoints": true
     }
   ]
 }

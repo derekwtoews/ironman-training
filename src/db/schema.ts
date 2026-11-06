@@ -107,6 +107,7 @@ export const activityLoad = pgTable(
       .notNull()
       .references(() => activities.id),
     load: integer("load").notNull(), // rounded load points
+    estimated: boolean("estimated").notNull().default(false), // true when no HR (e.g. swims)
     formulaVersion: integer("formula_version").notNull(),
   },
   (t) => [uniqueIndex("al_uq").on(t.activityId, t.formulaVersion)],
