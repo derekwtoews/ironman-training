@@ -40,8 +40,20 @@ Personal training web app for Derek's Ironman Ottawa build. Status legend: **DEC
 - Manual schedule edits always allowed (move, change, delete). A guardrail-breaking edit warns, never blocks. Edits sync to the calendar and feed the next weekly proposal.
 - Weekly loop: check-in (multiple-choice/rating per workout) -> plan proposal as before/after diff -> Derek approves. Proposer is a pluggable interface: (1) rules engine (MVP), (2) review packet run through Claude outside the app (v1), (3) optional API proposer with monthly cost cap (later).
 
+## Added: workout prescriptions and progress
+- **Every planned session is a structured workout**, not just a duration: segments (warm-up, main sets with reps and rest, cool-down), each with a target.
+  - Run: HR range (bpm) and pace range from Strava zones. Bike: watts range from FTP plus HR range. Swim: sets, distances, rest and effort by feel/pace (no HR in the pool).
+  - Targets are computed in the engine from Strava zones and FTP; never typed by an LLM. Stored as `planned_sessions.structure` (jsonb, zod-validated).
+  - Needs from Derek as settings: FTP (Strava has 315 W), a threshold run pace (Strava run zones are race-pace based), and a swim threshold pace (CSS) or a recent 400 m time.
+- **Progress page** (per discipline, over time), derived from synced activities, never from live Strava calls:
+  - Bike: power at Z2 heart rate, best 20-minute power vs FTP, long-ride duration.
+  - Run: pace at Z2 heart rate, best efforts, longest run.
+  - Swim: pace per 100 m on easy swims (no HR), best 400 m / 1500 m, longest swim.
+  - Each: headline number, change vs 8 weeks ago, trend line, personal bests.
+- Placement: structured workouts ship with the plan generator (MVP); Progress charts ship in MVP-lite (pace/power at HR from existing data), with PRs and test prompts in v1.
+
 ## Data model
-`athlete`, `strava_auth` (encrypted tokens), `strava_zones` (history), `activities` (raw_json), `activity_zone_seconds`, `activity_load`, `daily_metrics`, `constraints`, `plans`, `plan_weeks`, `planned_sessions` (status, matched_activity_id, gcal_event_id, source generated|manual), `plan_proposals`, `plan_changes`, `weekly_checkins`, `checkin_answers`, `calendar_link`, `sync_events`, plus a versioned `settings` table.
+`athlete`, `strava_auth` (encrypted tokens), `strava_zones` (history), `activities` (raw_json), `activity_zone_seconds`, `activity_load`, `daily_metrics`, `constraints`, `plans`, `plan_weeks`, `planned_sessions` (structure jsonb, status, matched_activity_id, gcal_event_id, source generated|manual), `plan_proposals`, `plan_changes`, `weekly_checkins`, `checkin_answers`, `calendar_link`, `sync_events`, plus a versioned `settings` table.
 
 ## UI
 Sidebar: Today, Calendar, Workouts, Insights, Weekly review, Settings; reusable cards. Dashboard: weekly load trend, fitness/fatigue, race countdown, discipline balance, key-session completion, this week's sessions, volume vs plan, short performance updates. Calendar shows planned and actual together. No drag-and-drop dashboard builder yet.
