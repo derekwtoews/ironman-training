@@ -57,7 +57,7 @@ export const activities = pgTable(
       .notNull()
       .references(() => athlete.id),
     stravaId: bigint("strava_id", { mode: "number" }).notNull(),
-    discipline: text("discipline").notNull(), // swim|bike|run|strength|other
+    discipline: text("discipline").notNull(), // swim|bike|run|strength|row|other
     sportType: text("sport_type").notNull(),
     name: text("name").notNull(),
     startUtc: ts("start_utc").notNull(),

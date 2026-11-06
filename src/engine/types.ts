@@ -1,4 +1,4 @@
-export type Discipline = "swim" | "bike" | "run" | "strength" | "other";
+export type Discipline = "swim" | "bike" | "run" | "strength" | "row" | "other";
 
 /** Strava zone as returned by the API; the last zone has max = -1 (open-ended). */
 export interface Zone {

@@ -30,6 +30,7 @@ const BIKE = new Set([
   "Handcycle",
 ]);
 const RUN = new Set(["Run", "VirtualRun", "TrailRun"]);
+const ROW = new Set(["Rowing", "VirtualRow"]);
 const STRENGTH = new Set([
   "WeightTraining",
   "Workout",
@@ -41,6 +42,7 @@ export function disciplineFor(sportType: string): Discipline {
   if (sportType === "Swim") return "swim";
   if (BIKE.has(sportType)) return "bike";
   if (RUN.has(sportType)) return "run";
+  if (ROW.has(sportType)) return "row";
   if (STRENGTH.has(sportType)) return "strength";
   return "other";
 }

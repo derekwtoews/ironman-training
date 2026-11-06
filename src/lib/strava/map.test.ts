@@ -30,6 +30,7 @@ describe("strava mapping", () => {
   it("maps sport types", () => {
     expect(disciplineFor("VirtualRide")).toBe("bike");
     expect(disciplineFor("WeightTraining")).toBe("strength");
+    expect(disciplineFor("Rowing")).toBe("row");
     expect(disciplineFor("Yoga")).toBe("other");
   });
   it("uses local date and integer units", () => {
