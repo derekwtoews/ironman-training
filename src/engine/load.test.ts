@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { loadFromZoneSeconds, strengthZoneSeconds, zoneForHr } from "./load";
+import {
+  loadFromZoneSeconds,
+  scaleZoneSeconds,
+  singleZoneSeconds,
+  strengthZoneSeconds,
+  zoneForHr,
+} from "./load";
 import type { Zone } from "./types";
 
 // Strava-style HR zones: [min, max), last max = -1.
@@ -41,5 +47,25 @@ describe("strength rule", () => {
     // 25 min in z1 = 25; 30 min in z2 = 60
     expect(loadFromZoneSeconds(strengthZoneSeconds(1500, 118, HR))).toBe(25);
     expect(loadFromZoneSeconds(strengthZoneSeconds(1800, 140, HR))).toBe(60);
+  });
+});
+
+describe("scaleZoneSeconds", () => {
+  it("trims a 3 h 5 m strength session to 1 h (Oct 19), all Z1: load 186 -> 60", () => {
+    const recorded = singleZoneSeconds(11130, 1);
+    expect(loadFromZoneSeconds(recorded)).toBe(186);
+    const fixed = scaleZoneSeconds(recorded, 11130, 3600);
+    expect(fixed).toEqual([3600, 0, 0, 0, 0]);
+    expect(loadFromZoneSeconds(fixed)).toBe(60);
+  });
+  it("keeps the zone mix and rounds to whole seconds", () => {
+    expect(scaleZoneSeconds([100, 200, 0, 0, 0], 300, 150)).toEqual([
+      50, 100, 0, 0, 0,
+    ]);
+    expect(scaleZoneSeconds([1, 1, 1, 0, 0], 3, 2)).toEqual([1, 1, 1, 0, 0]);
+  });
+  it("is a no-op for the same duration", () => {
+    const z: [number, number, number, number, number] = [10, 20, 30, 0, 0];
+    expect(scaleZoneSeconds(z, 60, 60)).toBe(z);
   });
 });

@@ -65,3 +65,18 @@ export function estimateSwimZoneSeconds(
 ): ZoneSeconds {
   return singleZoneSeconds(movingSeconds, map[effort]);
 }
+
+/**
+ * Scale zone seconds to a corrected duration (e.g. watch left running). Keeps the zone mix,
+ * rounds each zone to an integer second. `fromSeconds` is the activity's recorded moving time.
+ */
+export function scaleZoneSeconds(
+  z: ZoneSeconds,
+  fromSeconds: number,
+  toSeconds: number,
+): ZoneSeconds {
+  if (fromSeconds <= 0 || toSeconds === fromSeconds) return z;
+  return z.map((s) =>
+    Math.round((s * toSeconds) / fromSeconds),
+  ) as unknown as ZoneSeconds;
+}

@@ -337,3 +337,23 @@ export const bodyWeight = pgTable(
   },
   (t) => [uniqueIndex("body_weight_uq").on(t.athleteId, t.date, t.source)],
 );
+
+// Manual corrections to an activity (e.g. forgot to stop the watch). Raw Strava data stays
+// untouched in activities.raw_json; readers use coalesce(override, raw) for "effective" values.
+export const activityOverrides = pgTable(
+  "activity_overrides",
+  {
+    id: serial("id").primaryKey(),
+    athleteId: integer("athlete_id")
+      .notNull()
+      .references(() => athlete.id),
+    activityId: integer("activity_id")
+      .notNull()
+      .references(() => activities.id),
+    movingSeconds: integer("moving_seconds"), // corrected duration, null = keep Strava's
+    excludeFromLoad: boolean("exclude_from_load").notNull().default(false),
+    note: text("note"),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("activity_overrides_uq").on(t.activityId)],
+);

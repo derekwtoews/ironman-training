@@ -15,7 +15,8 @@ Full brief: `docs/PLAN.md`. Items marked DECIDED there need Derek's OK to change
 10. **Guardrails warn, never block** manual edits. Plan changes are never applied without Derek's approval.
 11. **No AI on Strava data** until Strava's API terms on AI use are checked.
 12. **Secrets:** never ask for them in chat. `.env.local` is gitignored; update `.env.example` when adding vars.
-13. Tests: engine code needs hand-checked fixtures (Vitest). Commit small, conventional messages.
+13. **Effective values.** Manual corrections live in `activity_overrides`, never in `raw_json`. Anything showing duration or load uses `coalesce(override, raw)` (loads already do). Re-sync re-applies overrides via `refreshActivityLoad`.
+14. Tests: engine code needs hand-checked fixtures (Vitest). Commit small, conventional messages.
 
 ## Commands
 `npm run dev | build | test | lint | db:generate | db:migrate`

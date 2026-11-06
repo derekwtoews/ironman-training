@@ -10,6 +10,7 @@ import {
 } from "@/db/schema";
 import { LOAD_FORMULA_VERSION, type Zone } from "@/engine";
 import { type StravaLap, writeLaps } from "@/lib/laps";
+import { refreshActivityLoad } from "@/lib/overrides";
 import { RateLimitError, type StravaClient, StravaHttpError } from "./client";
 import {
   deriveLoadZones,
@@ -187,6 +188,7 @@ export async function ingestActivity(
       formulaVersion: LOAD_FORMULA_VERSION,
     });
   }
+  await refreshActivityLoad(db, athleteId, row.id); // re-apply any manual correction
 }
 
 /**
