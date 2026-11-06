@@ -11,6 +11,7 @@ import {
   epoch,
   processQueue,
 } from "@/lib/strava/sync";
+import { snapshotStravaWeight } from "@/lib/weight";
 
 export const maxDuration = 60;
 
@@ -34,6 +35,13 @@ export async function GET(req: NextRequest) {
     .limit(1);
   const since = last ? addDays(last.d, -7) : BACKFILL_FROM;
   const queued = await enqueueSince(db, client, a.id, epoch(since), "nightly");
+  const profile = await client.get<{ weight?: number }>("/athlete");
+  const weightSaved = await snapshotStravaWeight(
+    db,
+    a.id,
+    profile.weight,
+    today,
+  );
   const result = await processQueue(db, client, a.id, today, 40);
-  return Response.json({ ok: true, queued, ...result });
+  return Response.json({ ok: true, queued, weightSaved, ...result });
 }

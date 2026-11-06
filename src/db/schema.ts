@@ -287,3 +287,53 @@ export const syncEvents = pgTable("sync_events", {
   createdAt: createdAt(),
   processedAt: ts("processed_at"),
 });
+
+// Laps as recorded by the watch (lap button, auto-lap, or pool sets). Derived from
+// activities.raw_json.laps, so recomputable; `kind` comes from the engine's lap classifier.
+export const activityLaps = pgTable(
+  "activity_laps",
+  {
+    id: serial("id").primaryKey(),
+    athleteId: integer("athlete_id")
+      .notNull()
+      .references(() => athlete.id),
+    activityId: integer("activity_id")
+      .notNull()
+      .references(() => activities.id),
+    lapIndex: integer("lap_index").notNull(), // 0-based order within the activity
+    elapsedSeconds: integer("elapsed_seconds").notNull(),
+    movingSeconds: integer("moving_seconds").notNull(),
+    distanceM: integer("distance_m").notNull(),
+    avgSpeedMmS: integer("avg_speed_mm_s"), // millimeters per second
+    avgHr: integer("avg_hr"),
+    maxHr: integer("max_hr"),
+    avgCadence: integer("avg_cadence"),
+    avgWatts: integer("avg_watts"),
+    elevationGainM: integer("elevation_gain_m"),
+    kind: text("kind").notNull(), // warmup|work|rest|cooldown|steady|set|other
+    formulaVersion: integer("formula_version").notNull(),
+  },
+  (t) => [
+    uniqueIndex("activity_laps_uq").on(
+      t.activityId,
+      t.lapIndex,
+      t.formulaVersion,
+    ),
+  ],
+);
+
+// Body weight log. Strava keeps only the current weight, so history lives here.
+export const bodyWeight = pgTable(
+  "body_weight",
+  {
+    id: serial("id").primaryKey(),
+    athleteId: integer("athlete_id")
+      .notNull()
+      .references(() => athlete.id),
+    date: text("date").notNull(), // YYYY-MM-DD
+    grams: integer("grams").notNull(),
+    source: text("source").notNull(), // manual | strava
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("body_weight_uq").on(t.athleteId, t.date, t.source)],
+);

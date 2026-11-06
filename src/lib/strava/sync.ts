@@ -2,12 +2,14 @@ import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "@/db";
 import {
   activities,
+  activityLaps,
   activityLoad,
   activityZoneSeconds,
   stravaZones,
   syncEvents,
 } from "@/db/schema";
 import { LOAD_FORMULA_VERSION, type Zone } from "@/engine";
+import { type StravaLap, writeLaps } from "@/lib/laps";
 import { RateLimitError, type StravaClient, StravaHttpError } from "./client";
 import {
   deriveLoadZones,
@@ -134,6 +136,14 @@ export async function ingestActivity(
     })
     .returning({ id: activities.id });
 
+  await writeLaps(
+    db,
+    athleteId,
+    row.id,
+    m.discipline,
+    (raw as { laps?: StravaLap[] }).laps,
+  );
+
   const zonesRaw =
     m.discipline === "strength"
       ? null
@@ -179,7 +189,10 @@ export async function ingestActivity(
   }
 }
 
-/** Drain up to `max` queued events, oldest first. Stops cleanly on rate limit. */
+/**
+ * Drain up to `max` queued events, newest activity first (Strava ids grow over time), so recent
+ * weeks are usable before an old backfill finishes. Stops cleanly on rate limit.
+ */
 export async function processQueue(
   db: Db,
   client: StravaClient,
@@ -193,7 +206,7 @@ export async function processQueue(
     .where(
       and(eq(syncEvents.athleteId, athleteId), eq(syncEvents.status, "queued")),
     )
-    .orderBy(asc(syncEvents.id))
+    .orderBy(desc(syncEvents.stravaObjectId), asc(syncEvents.id))
     .limit(max);
   if (!events.length)
     return { done: 0, errors: 0, rateLimited: false, remaining: 0 };
@@ -224,6 +237,9 @@ export async function processQueue(
           await db
             .delete(activityLoad)
             .where(inArray(activityLoad.activityId, ids));
+          await db
+            .delete(activityLaps)
+            .where(inArray(activityLaps.activityId, ids));
           await db.delete(activities).where(inArray(activities.id, ids));
         }
       } else {

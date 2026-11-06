@@ -15,6 +15,13 @@
       "when": 1793929086380,
       "tag": "0001_bumpy_magdalene",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793931448590,
+      "tag": "0002_pink_zuras",
+      "breakpoints": true
     }
   ]
 }
