@@ -22,7 +22,7 @@ Personal training web app for Derek's Ironman Ottawa build. Status legend: **DEC
 - Raw Strava payloads stored as received. Derived values (zone seconds, load, fitness/fatigue) are recomputable caches tagged with `formula_version`. Never call Strava on page load.
 
 ## DECIDED: Strava
-- OAuth + webhooks + paced, queued backfill (from 2025-01) + nightly catch-up job. Rate limits are low.
+- OAuth + webhooks + paced, queued backfill (from 2026-01-01; set by `HISTORY_START` in `src/lib/history.ts`; PBs, zones and FTP come from Strava directly, so older history is not needed) + nightly catch-up job. Rate limits are low.
 - Check Strava's current API terms on AI use of athlete data before sending any activity data to a model.
 - Use Strava's HR and power zones as returned by the API. "Threshold drift" insight suggests when to change Strava zones.
 - Indoor rides are treated like outdoor rides (power/HR matter; distance estimated). Pool swims flagged `is_trainer`.

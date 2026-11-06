@@ -21,6 +21,7 @@ import {
   weeklyVolume,
   weekStart,
 } from "@/engine";
+import { HISTORY_START } from "@/lib/history";
 
 /** Today's date in the athlete's timezone, as YYYY-MM-DD. Pages pass this into the engine. */
 export function localToday(timezone: string, now: Date = new Date()): string {
@@ -166,7 +167,12 @@ export async function getThisWeek(
   const [first] = await db
     .select({ d: sql<string | null>`min(${activities.localDate})` })
     .from(activities)
-    .where(eq(activities.athleteId, a.id));
+    .where(
+      and(
+        eq(activities.athleteId, a.id),
+        gte(activities.localDate, HISTORY_START),
+      ),
+    );
   const historyStart = first?.d ?? null;
 
   // Fitness/fatigue need the full history so the averages are warmed up.

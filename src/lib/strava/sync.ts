@@ -9,6 +9,7 @@ import {
   syncEvents,
 } from "@/db/schema";
 import { LOAD_FORMULA_VERSION, type Zone } from "@/engine";
+import { HISTORY_START } from "@/lib/history";
 import { type StravaLap, writeLaps } from "@/lib/laps";
 import { refreshActivityLoad } from "@/lib/overrides";
 import { RateLimitError, type StravaClient, StravaHttpError } from "./client";
@@ -20,7 +21,7 @@ import {
   type StravaZonesResponse,
 } from "./map";
 
-export const BACKFILL_FROM = "2025-01-01";
+export const BACKFILL_FROM = HISTORY_START;
 const PAGE = 100;
 
 type Source = "backfill" | "webhook" | "nightly";
@@ -269,5 +270,45 @@ export async function processQueue(
     errors,
     rateLimited,
     remaining: events.length - done - errors,
+  };
+}
+
+/**
+ * Mark queued sync events for activities before HISTORY_START as "skipped". Lists the wanted ids
+ * from Strava (a few paged calls) and skips every other queued backfill/nightly event.
+ */
+export async function skipOutsideHistory(
+  db: Db,
+  client: StravaClient,
+  athleteId: number,
+) {
+  const wanted = new Set<number>();
+  for (let page = 1; ; page++) {
+    const batch = await client.get<{ id: number }[]>("/athlete/activities", {
+      after: epoch(HISTORY_START),
+      per_page: PAGE,
+      page,
+    });
+    for (const a of batch) wanted.add(a.id);
+    if (batch.length < PAGE) break;
+  }
+  const queued = await db
+    .select({ id: syncEvents.id, objectId: syncEvents.stravaObjectId })
+    .from(syncEvents)
+    .where(
+      and(eq(syncEvents.athleteId, athleteId), eq(syncEvents.status, "queued")),
+    );
+  const skip = queued
+    .filter((e) => e.objectId != null && !wanted.has(e.objectId))
+    .map((e) => e.id);
+  if (skip.length)
+    await db
+      .update(syncEvents)
+      .set({ status: "skipped", processedAt: new Date() })
+      .where(inArray(syncEvents.id, skip));
+  return {
+    wanted: wanted.size,
+    skipped: skip.length,
+    remaining: queued.length - skip.length,
   };
 }
